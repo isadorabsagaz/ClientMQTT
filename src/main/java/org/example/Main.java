@@ -23,13 +23,17 @@ public class Main {
                         new InputStreamReader(System.in)
                 );
         ) {
-            System.out.println("Connected to broker in " + HOST + ":" + PORT);
+            System.out.println("Connected to broker in " + HOST + ": " + PORT);
 
             while (true) {
-                System.out.println("Type a message: ");
+                System.out.print("Type a message ('exit' to quit): ");
                 String input = keyboard.readLine();
 
-                if (input.equalsIgnoreCase("exit")) break;
+                if (input.equalsIgnoreCase("exit")) {
+                    System.out.println("Goodbye!");
+                    out.close();
+                    break;
+                }
 
                 out.println(input);
                 String response = in.readLine();
