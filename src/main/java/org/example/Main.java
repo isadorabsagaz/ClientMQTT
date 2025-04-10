@@ -1,5 +1,7 @@
 package org.example;
 
+import com.google.gson.Gson;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -25,25 +27,56 @@ public class Main {
         ) {
             System.out.println("Connected to broker in " + HOST + ": " + PORT);
 
-            while (true) {
-                System.out.print("Type a message ('exit' to quit): ");
-                String input = keyboard.readLine();
+            //listening server
+            new Thread(() -> {
+                String line;
+                try{
+                    while ((line = in.readLine()) != null){
+                        Message received = new Gson().fromJson(line, Message.class);
 
-                if (input.equalsIgnoreCase("exit")) {
+                        if ("MESSAGE".equalsIgnoreCase(received.type)) {
+                            System.out.println("[Topic: "+received.topic+"] \n Message: " + received.payload);
+                        }
+                    }
+                }catch (IOException e){
+                    e.fillInStackTrace();
+                }
+            }).start();
+
+            while (true) {
+                System.out.println("Type 'exit' to quit");
+                System.out.print("Type the command (SUBSCRIBE / PUBLISH): ");
+                String type = keyboard.readLine();
+
+                if ("exit".equalsIgnoreCase(type)) {
                     System.out.println("Goodbye!");
                     out.close();
                     break;
                 }
 
-                out.println(input);
-                String response = in.readLine();
-                System.out.println("Broker response: " + response);
+                System.out.println("Type the topic: ");
+                String topic = keyboard.readLine();
+
+                String payload = null;
+                if ("PUBLISH".equalsIgnoreCase(type)) {
+                    System.out.println("Type the message: ");
+                    payload = keyboard.readLine();
+                }
+
+                //generates message to send to server
+                Message msg = new Message();
+                msg.type = type;
+                msg.topic = topic;
+                msg.payload = payload;
+
+                //sends it
+                String json = new Gson().toJson(msg);
+                out.println(json);
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            e.fillInStackTrace();
             throw new RuntimeException(e);
         }
-
     }
 }
