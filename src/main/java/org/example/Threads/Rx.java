@@ -1,0 +1,54 @@
+package org.example.Threads;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import org.example.ClientService;
+import org.example.Models.Message;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+public class Rx implements Runnable {
+    private final BufferedReader reader;
+
+    public Rx(InputStream in) {
+        this.reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
+    }
+
+    @Override
+    public void run() {
+        try {
+            String line;
+            while ((line = reader.readLine()) != null){
+                Message msg = new Gson().fromJson(line, Message.class);
+
+                //TODO: remover esse sout
+                System.out.println("Received (parsed): " + msg.type);
+
+                switch (msg.type.toUpperCase()) {
+                    case "MESSAGE" -> System.out.println("[Topic: " + msg.topic + "]\nMessage: " + msg.payload);
+                    case "TOPICS_LIST" -> {
+                        List<String> topics = new Gson().fromJson(msg.payload, new TypeToken<List<String>>() {
+                        }.getType());
+
+                        ClientService.latestTopics = topics;
+                        ClientService.topicsUpdated = true;
+
+                        System.out.println("[Topics available: " + topics.toString() + "]\n");
+                        for (int i = 0; i < topics.size(); i++) {
+                            System.out.println(i + ". " + topics.get(i));
+                        }
+                        System.out.print("\n>");
+                    }
+                    default -> System.out.println("Unknown type: " + msg.type);
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Disconnected from the broker (Rx): " + e.getMessage());
+        }
+    }
+}
