@@ -26,11 +26,15 @@ public class Rx implements Runnable {
             while ((line = reader.readLine()) != null){
                 Message msg = new Gson().fromJson(line, Message.class);
 
-                //TODO: remover esse sout
-                System.out.println("Received (parsed): " + msg.type);
-
                 switch (msg.type.toUpperCase()) {
-                    case "MESSAGE" -> System.out.println("[Topic: " + msg.topic + "]\nMessage: " + msg.payload);
+                    case "MESSAGE" -> {
+                        System.out.println("\n-------------------Message Received!-------------------");
+                        System.out.println("Topic:      "+msg.topic);
+                        System.out.println("Date:       "+msg.date);
+                        System.out.println("Time:       "+msg.time);
+                        System.out.println("Message:    "+msg.payload);
+                        System.out.println("-------------------------------------------------------");
+                    }
                     case "TOPICS_LIST" -> {
                         List<String> topics = new Gson().fromJson(msg.payload, new TypeToken<List<String>>() {
                         }.getType());
@@ -38,9 +42,10 @@ public class Rx implements Runnable {
                         ClientService.latestTopics = topics;
                         ClientService.topicsUpdated = true;
 
-                        System.out.println("[Topics available: " + topics.toString() + "]\n");
+                        System.out.print("[Topics available: " + topics.toString() + "]\n");
+                        System.out.println("-1. 'Create a new topic'");
                         for (int i = 0; i < topics.size(); i++) {
-                            System.out.println(i + ". " + topics.get(i));
+                            System.out.println(" "+i + ". " + topics.get(i));
                         }
                         System.out.print("\n>");
                     }

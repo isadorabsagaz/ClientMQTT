@@ -40,10 +40,11 @@ public class Tx implements Runnable {
         }
     }
     private void showMenu() {
-        System.out.println("\n== MENU ==");
+        System.out.println("\n==========================MENU=========================");
         System.out.println("1. SUBSCRIBE - Subscribe to a topic");
         System.out.println("2. PUBLISH   - Send a message to a topic");
         System.out.println("3. EXIT      - Disconnect");
+        System.out.println("=======================================================");
         System.out.print("> ");
     }
 
@@ -65,7 +66,7 @@ public class Tx implements Runnable {
         if (topic == null) return;
 
         System.out.println("[Topic]: " + topic);
-        System.out.println("Enter message to publish: ");
+        System.out.print("Enter message to publish: ");
         String payload = scanner.nextLine().trim();
 
          send(createMessage("PUBLISH", topic, payload));
@@ -79,8 +80,13 @@ public class Tx implements Runnable {
         String topic = "";
 
         if (topics.isEmpty()) {
-            System.out.println("No topics available yet. Create a new one to "+action+": ");
+            System.out.print("No topics available yet. Create a new one to "+action+": ");
             topic = scanner.nextLine().trim();
+
+            if (action.equalsIgnoreCase("PUBLISH")) {
+                send(createMessage("SUBSCRIBE", topic, null));
+            }
+
             if (topic.isEmpty()) {
                 System.out.println("Topic cannot be empty. Try again.");
                 return null;
@@ -97,12 +103,17 @@ public class Tx implements Runnable {
         scanner.nextLine();
 
         if (index == -1) {
-            System.out.println("Create a new topic: ");
+            System.out.print("Create a new topic: ");
             String topic = scanner.nextLine().trim();
             if (topic.isEmpty()) {
                 System.out.println("Topic cannot be empty. Try again.");
                 return null;
             }
+
+            if (action.equalsIgnoreCase("PUBLISH")) {
+                send(createMessage("SUBSCRIBE", topic, null));
+            }
+
             return topic;
         }
 
